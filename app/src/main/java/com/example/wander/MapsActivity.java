@@ -3,6 +3,7 @@ package com.example.wander;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -11,12 +12,6 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -27,9 +22,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.model.EncodedPolyline;
 
-import org.json.JSONObject;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class MapsActivity
@@ -50,23 +47,23 @@ public class MapsActivity
                 (SupportMapFragment) this.getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "https://jsonplaceholder.typicode.com/posts/1";
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i("test", "Response is: " + response.toString());
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.i("test", "That didn't work!");
-            }
-        });
-
-        queue.add(request);
+//        RequestQueue queue = Volley.newRequestQueue(this);
+//        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=Disneyland&destination=Universal+Studios+Hollywood&key=" + this.getResources().getString(R.string.google_maps_key);
+//
+//        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        Log.i("test", "Response is: " + response.toString());
+//                    }
+//                }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Log.i("test", "That didn't work!");
+//            }
+//        });
+//
+//        queue.add(request);
     }
 
 
@@ -105,6 +102,7 @@ public class MapsActivity
         this.setPoiClick();
         this.setMapStyle();
         this.enableMyLocation();
+        this.setPath();
     }
 
     @Override
@@ -211,5 +209,21 @@ public class MapsActivity
             this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }
+    }
+
+    private void setPath() {
+        String overviewPolylinePoints = "qukmEvvvnUz@l@\\n@H|@@x@M\\AnAGPsB@Ee@O?e@BoAC_@H}@?_@??S?_@?ACCe@_@[OGm@BiEAs@_@Bm@HyEhAaC|@eCv@eF_BgB]wAHmAb@oJdIeCxB}@nAeCtBgEhEaCfCyFlGgOfPg@b@qDnGsAvDoAvEeC~PeBhKoAhEqDrIwa@b_AyCzGyBdEqFnJqB~DeFxMiOh_@gVdk@oCxEiD~EgDpEkHjKu@|A{AxEe@|Bs@jDqBhIkB`JgBbG{DzJ_DjGgGjKgDvG}FvMsNb\\aK~TmJ`TqCjFi@v@iG~H_GbIiD`HoKfV_U`h@uDpI}DbJiDnG_FlJiCtGgC|FqCjF_IjR_KxVkM~Z}[lp@_NrYgDlIyDbI_FtIyGpJeEzEmKhKeHhHsGpGqE~FeB`DqDvHiD|H}CdFkEjG{FrG}D`D}RpM}d@nYaUdNcNnJ}NlJaPtJaLtG}]lSw^bT_GjDaEzCaCbCaCzCiNbT_MlRuUj^yHfLmDnDkAz@iEhCsAj@eBj@iH~AqIfBwJpBqFpAqFxBgGrDeOpKyOpOqQrQwExEqBlCgIvMqDvD_n@nl@kGpFgCzAaEpByAz@uFzEcNfMgHbHkMtOyBvCeAbBkBvDyCjEyD|DmEzDwBvByAxBeBrDwAzD_AlCmCxHmHrTeCbMkBpEsB`E_F|NqIdV}@hD_AzFc@rFI|E?jKBvWEnLUbEk@xE}@nEsDhLqIhWoIvVeAdESz@@f@CNsApFwD~KyJnYaGtP}CtGyAdC{BxC}BnBmCdCiBjAqDnAaBZ}BNuA?cD]iDOoHX_BEaCWyAWwHs@gEAcKJkDReC\\gFlAuJ|DcFrB}@l@eBpBsAjDa@xFqBtSmAbPc@tHMnC?dEHpEe@bDuA|DyIfPiGhL{FhJiEnFsHrGsHfGmDbDcMbRqFhJoCfH{Jh`@wBtIoFlPgJjYqEpLyBxHuA|GyEtVuBvMqBzNqBnPi@zDyAnHsAlE_BvDsGzOmIfUqCzFoFbJ}HjMqC|DiDhD_EtCkNjH{BpAqCdC_BrB_BnCqIpOuBzC{AdB_BxAsE~C}ShKcDnB_BzAaBxBsAhCy@`CgAtFSfCI|GS~Ge@zCqAhE_BbD_GfLcO~Y{A~B_BjBuCdC}CtAiDx@mJ`CmJjB_Df@oFxAcEdBqBjAcEtCmGjGSXoDpEiFpGcCbCgAv@{GdE}FvF}F~Fe@JsE~Do@ZgEnCuB`BoB`DqAhA_@b@_ArAe@IQA}@k@cCm@wBE";
+        EncodedPolyline encodedPolyline = new EncodedPolyline(overviewPolylinePoints);
+        List<com.google.maps.model.LatLng> rawPoints = encodedPolyline.decodePath();
+
+        ArrayList<LatLng> points = new ArrayList<>();
+        for (com.google.maps.model.LatLng latLng : rawPoints) {
+            points.add(new LatLng(latLng.lat, latLng.lng));
+        }
+
+        this.googleMap.addPolyline(new PolylineOptions()
+                .addAll(points)
+                .width(5.0f)
+                .color(Color.RED));
     }
 }
